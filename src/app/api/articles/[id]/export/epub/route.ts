@@ -47,21 +47,6 @@ export async function GET(
 
         // Process Content and Images
         // We construct the full body content here to ensure everything is properly serialized as XHTML
-        // IMPORTANT: Replace named entities with numeric entities or raw characters to prevent XML parsing errors
-        // on devices that don't fully support the XHTML DTD (like reMarkable).
-        const cleanContent = (article.content || '')
-            .replace(/&nbsp;/g, '&#160;')
-            .replace(/&mdash;/g, '&#8212;')
-            .replace(/&ndash;/g, '&#8211;')
-            .replace(/&ldquo;/g, '&#8220;')
-            .replace(/&rdquo;/g, '&#8221;')
-            .replace(/&lsquo;/g, '&#8216;')
-            .replace(/&rsquo;/g, '&#8217;')
-            .replace(/&copy;/g, '&#169;')
-            .replace(/&trade;/g, '&#8482;')
-            .replace(/&reg;/g, '&#174;')
-            .replace(/&hellip;/g, '&#8230;');
-
         const dom = new JSDOM(`<!DOCTYPE html><body>
             <h1 class="article-title">${article.title}</h1>
             <div class="meta">
@@ -70,10 +55,17 @@ export async function GET(
                 ${new Date(article.createdAt * 1000).toLocaleDateString()}
             </div>
             <div class="article-content">
-                ${cleanContent}
+                ${article.content}
             </div>
         </body>`);
         const document = dom.window.document;
+
+        // SANITIZATION: Remove unsupported tags that crash e-readers
+        const unsafeTags = ['script', 'iframe', 'object', 'embed', 'style', 'link', 'meta', 'form', 'input', 'button'];
+        unsafeTags.forEach(tag => {
+            const elements = document.querySelectorAll(tag);
+            elements.forEach(el => el.remove());
+        });
 
         // Clean up figures and captions
         const figures = Array.from(document.querySelectorAll('figure'));
@@ -90,6 +82,9 @@ export async function GET(
             const img = figure.querySelector('img');
             if (img) {
                 img.removeAttribute('style');
+                img.removeAttribute('srcset'); // Remove srcset as it can confuse older readers
+                img.removeAttribute('loading');
+                img.removeAttribute('decoding');
                 img.classList.add('article-image');
             }
         });
@@ -101,6 +96,15 @@ export async function GET(
         for (let i = 0; i < images.length; i++) {
             const img = images[i];
             const src = img.getAttribute('src');
+
+            // Clean up image attributes
+            img.removeAttribute('srcset');
+            img.removeAttribute('loading');
+            img.removeAttribute('decoding');
+            img.removeAttribute('style');
+            img.removeAttribute('width'); // Let CSS handle sizing
+            img.removeAttribute('height');
+
             if (src && src.startsWith('http')) {
                 try {
                     const response = await axios.get(src, { responseType: 'arraybuffer', timeout: 5000 });
@@ -123,7 +127,12 @@ export async function GET(
                     });
                 } catch (err) {
                     console.error(`Failed to download image: ${src}`, err);
+                    // If download fails, remove the image to prevent broken icon
+                    img.remove();
                 }
+            } else {
+                // Remove images with invalid/local sources
+                img.remove();
             }
         }
 
