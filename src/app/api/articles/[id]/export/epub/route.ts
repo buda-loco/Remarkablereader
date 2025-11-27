@@ -45,8 +45,8 @@ export async function GET(
         archive.append(containerXml, { name: 'META-INF/container.xml', store: true });
 
         // 3. OEBPS/article.xhtml
-        // Strip images for safety, though manual generation handles them better if we wanted to download them.
-        const contentWithoutImages = article.content.replace(/<img[^>]*>/g, '');
+        // We no longer strip images, allowing remote images to be referenced.
+        const contentWithImages = article.content;
 
         // Use JSDOM to ensure valid XHTML
         // We construct the full body content here to ensure everything is properly serialized
@@ -57,7 +57,7 @@ export async function GET(
                 ${article.siteName ? `${article.siteName} • ` : ''}
                 ${new Date(article.createdAt * 1000).toLocaleDateString()}
             </div>
-            ${contentWithoutImages}
+            ${contentWithImages}
         </body>`);
 
         const serializer = new dom.window.XMLSerializer();
@@ -83,9 +83,9 @@ export async function GET(
         h1 { 
             font-family: Georgia, Cambria, "Times New Roman", Times, serif;
             font-size: 2.2em; 
-            line-height: 1.3;
+            line-height: 1.2;
             margin-bottom: 0.5em;
-            text-align: left;
+            text-align: left !important;
             font-weight: bold;
         }
         .meta { 
@@ -98,6 +98,14 @@ export async function GET(
             padding-bottom: 1em;
         }
         img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
+        figure { margin: 1.5em 0; }
+        figcaption { 
+            font-size: 0.8em; 
+            color: #666; 
+            text-align: center; 
+            margin-top: 0.5em; 
+            font-style: italic;
+        }
         p { 
             margin-bottom: 1.5em;
             text-align: left;
