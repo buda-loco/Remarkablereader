@@ -1,0 +1,104 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+:root {
+  --color-paper: #FDFBF7;
+  --color-ink: #1d1b3c;
+  --color-gray: #888888;
+  --color-border: #e0e0e0;
+
+  --bs-body-bg: var(--color-paper);
+  --bs-body-color: var(--color-ink);
+  --bs-font-sans-serif: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bs-font-serif: var(--font-merriweather), Georgia, "Times New Roman", serif;
+  --bs-primary: var(--color-ink);
+  --bs-border-color: var(--color-border);
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--bs-font-sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Admin Look */
+.btn-primary {
+  background-color: var(--color-ink);
+  border-color: var(--color-ink);
+  border-radius: 0;
+  /* Sharp corners for admin look */
+  padding: 0.5rem 1.5rem;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  background-color: #000;
+  border-color: #000;
+}
+
+.btn-outline-primary {
+  color: var(--color-ink);
+  border-color: var(--color-ink);
+  border-radius: 0;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--color-ink);
+  color: #fff;
+}
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  background-color: #fff;
+  box-shadow: none;
+}
+
+.form-control {
+  border-radius: 0;
+  border-color: var(--color-border);
+  padding: 0.75rem;
+}
+
+.form-control:focus {
+  border-color: var(--color-ink);
+  box-shadow: none;
+}
+
+/* Typography overrides */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--bs-font-serif);
+  font-weight: 700;
+}
+
+/* Article Content Styles */
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 2rem 0;
+}
+
+.article-content p {
+  margin-bottom: 1.5rem;
+}
+
+.article-content h2 {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.article-content a {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-color: #ccc;
+}
+
+.article-content a:hover {
+  text-decoration-color: var(--color-ink);
+}

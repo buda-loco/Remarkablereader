@@ -1,0 +1,38 @@
+{
+  "name": "reader-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
+    "@mozilla/readability": "^0.6.0",
+    "axios": "^1.13.2",
+    "better-sqlite3": "^12.4.6",
+    "bootstrap": "^5.3.8",
+    "epub-gen": "^0.1.0",
+    "isomorphic-dompurify": "^2.33.0",
+    "jsdom": "^27.2.0",
+    "next": "16.0.5",
+    "puppeteer": "^24.31.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "sass": "^1.94.2",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/jsdom": "^27.0.0",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/uuid": "^10.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.5",
+    "typescript": "^5"
+  }
+}
