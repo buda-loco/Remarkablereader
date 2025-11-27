@@ -5,6 +5,7 @@ import fs from 'fs';
 import os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import { JSDOM } from 'jsdom';
+import axios from 'axios';
 
 // Use require for archiver to ensure compatibility
 const archiver = require('archiver');
@@ -27,7 +28,7 @@ export async function GET(
     });
 
     // Promise to handle the archive generation
-    const generateArchive = new Promise<void>((resolve, reject) => {
+    const generateArchive = new Promise<void>(async (resolve, reject) => {
         output.on('close', () => resolve());
         archive.on('error', (err: any) => reject(err));
         archive.pipe(output);
@@ -44,24 +45,54 @@ export async function GET(
 </container>`;
         archive.append(containerXml, { name: 'META-INF/container.xml', store: true });
 
-        // 3. OEBPS/article.xhtml
-        // We no longer strip images, allowing remote images to be referenced.
-        const contentWithImages = article.content;
+        // Process Content and Images
+        const dom = new JSDOM(article.content);
+        const document = dom.window.document;
+        const images = Array.from(document.querySelectorAll('img'));
+        const downloadedImages: { id: string, href: string, mediaType: string }[] = [];
 
-        // Use JSDOM to ensure valid XHTML
-        // We construct the full body content here to ensure everything is properly serialized
-        const dom = new JSDOM(`<!DOCTYPE html><body>
+        // Download and embed images
+        for (let i = 0; i < images.length; i++) {
+            const img = images[i];
+            const src = img.getAttribute('src');
+            if (src && src.startsWith('http')) {
+                try {
+                    const response = await axios.get(src, { responseType: 'arraybuffer', timeout: 5000 });
+                    const contentType = response.headers['content-type'];
+                    const extension = contentType?.split('/')[1] || 'jpg';
+                    const filename = `image_${i}.${extension}`;
+                    const imagePath = `OEBPS/images/${filename}`;
+
+                    // Add to archive
+                    archive.append(response.data, { name: imagePath });
+
+                    // Update src in DOM
+                    img.setAttribute('src', `images/${filename}`);
+
+                    // Add to manifest list
+                    downloadedImages.push({
+                        id: `img_${i}`,
+                        href: `images/${filename}`,
+                        mediaType: contentType || 'image/jpeg'
+                    });
+                } catch (err) {
+                    console.error(`Failed to download image: ${src}`, err);
+                    // Keep original src or remove? Keeping original might be safer for fallback, 
+                    // but for reMarkable it won't work. Let's keep it but maybe add a class.
+                }
+            }
+        }
+
+        // Construct final HTML
+        const bodyContent = `
             <h1>${article.title}</h1>
             <div class="meta">
                 ${article.byline ? `By ${article.byline} • ` : ''}
                 ${article.siteName ? `${article.siteName} • ` : ''}
                 ${new Date(article.createdAt * 1000).toLocaleDateString()}
             </div>
-            ${contentWithImages}
-        </body>`);
-
-        const serializer = new dom.window.XMLSerializer();
-        const bodyContent = serializer.serializeToString(dom.window.document.body);
+            ${document.body.innerHTML}
+        `;
 
         const xhtmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -114,11 +145,17 @@ export async function GET(
         a { color: #000; text-decoration: underline; }
     </style>
 </head>
+<body>
 ${bodyContent}
+</body>
 </html>`;
         archive.append(xhtmlContent, { name: 'OEBPS/article.xhtml', store: true });
 
         // 4. OEBPS/content.opf
+        const imageManifestItems = downloadedImages.map(img =>
+            `<item id="${img.id}" href="${img.href}" media-type="${img.mediaType}"/>`
+        ).join('\n        ');
+
         const contentOpf = `<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" version="2.0">
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
@@ -130,6 +167,7 @@ ${bodyContent}
     <manifest>
         <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
         <item id="article" href="article.xhtml" media-type="application/xhtml+xml"/>
+        ${imageManifestItems}
     </manifest>
     <spine toc="ncx">
         <itemref idref="article"/>
