@@ -47,6 +47,21 @@ export async function GET(
 
         // Process Content and Images
         // We construct the full body content here to ensure everything is properly serialized as XHTML
+        // IMPORTANT: Replace named entities with numeric entities or raw characters to prevent XML parsing errors
+        // on devices that don't fully support the XHTML DTD (like reMarkable).
+        const cleanContent = (article.content || '')
+            .replace(/&nbsp;/g, '&#160;')
+            .replace(/&mdash;/g, '&#8212;')
+            .replace(/&ndash;/g, '&#8211;')
+            .replace(/&ldquo;/g, '&#8220;')
+            .replace(/&rdquo;/g, '&#8221;')
+            .replace(/&lsquo;/g, '&#8216;')
+            .replace(/&rsquo;/g, '&#8217;')
+            .replace(/&copy;/g, '&#169;')
+            .replace(/&trade;/g, '&#8482;')
+            .replace(/&reg;/g, '&#174;')
+            .replace(/&hellip;/g, '&#8230;');
+
         const dom = new JSDOM(`<!DOCTYPE html><body>
             <h1 class="article-title">${article.title}</h1>
             <div class="meta">
@@ -55,7 +70,7 @@ export async function GET(
                 ${new Date(article.createdAt * 1000).toLocaleDateString()}
             </div>
             <div class="article-content">
-                ${article.content}
+                ${cleanContent}
             </div>
         </body>`);
         const document = dom.window.document;
@@ -113,7 +128,10 @@ export async function GET(
         }
 
         const serializer = new dom.window.XMLSerializer();
-        const bodyContent = serializer.serializeToString(document.body);
+        // Serialize body content but remove the xmlns attribute that JSDOM/XMLSerializer might add to the root element
+        // of the fragment if it thinks it's a standalone XML document.
+        let bodyContent = serializer.serializeToString(document.body);
+        bodyContent = bodyContent.replace(/ xmlns="http:\/\/www\.w3\.org\/1999\/xhtml"/g, '');
 
         const xhtmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
