@@ -46,7 +46,16 @@ export async function GET(
         archive.append(containerXml, { name: 'META-INF/container.xml', store: true });
 
         // Process Content and Images
-        const dom = new JSDOM(article.content);
+        // We construct the full body content here to ensure everything is properly serialized as XHTML
+        const dom = new JSDOM(`<!DOCTYPE html><body>
+            <h1>${article.title}</h1>
+            <div class="meta">
+                ${article.byline ? `By ${article.byline} • ` : ''}
+                ${article.siteName ? `${article.siteName} • ` : ''}
+                ${new Date(article.createdAt * 1000).toLocaleDateString()}
+            </div>
+            ${article.content}
+        </body>`);
         const document = dom.window.document;
         const images = Array.from(document.querySelectorAll('img'));
         const downloadedImages: { id: string, href: string, mediaType: string }[] = [];
@@ -83,16 +92,8 @@ export async function GET(
             }
         }
 
-        // Construct final HTML
-        const bodyContent = `
-            <h1>${article.title}</h1>
-            <div class="meta">
-                ${article.byline ? `By ${article.byline} • ` : ''}
-                ${article.siteName ? `${article.siteName} • ` : ''}
-                ${new Date(article.createdAt * 1000).toLocaleDateString()}
-            </div>
-            ${document.body.innerHTML}
-        `;
+        const serializer = new dom.window.XMLSerializer();
+        const bodyContent = serializer.serializeToString(document.body);
 
         const xhtmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -145,9 +146,7 @@ export async function GET(
         a { color: #000; text-decoration: underline; }
     </style>
 </head>
-<body>
 ${bodyContent}
-</body>
 </html>`;
         archive.append(xhtmlContent, { name: 'OEBPS/article.xhtml', store: true });
 
