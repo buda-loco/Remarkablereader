@@ -132,7 +132,8 @@ export async function GET(
         img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
         figure { margin: 1.5em 0; }
         figcaption { 
-            font-size: 0.8em; 
+            font-size: 0.75em; 
+            line-height: 1.3;
             color: #666; 
             text-align: center; 
             margin-top: 0.5em; 
