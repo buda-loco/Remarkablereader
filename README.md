@@ -2,7 +2,7 @@
 
 A self-contained, distraction-free reading application built with Next.js. This app allows you to curate your own personal library of articles, parsed for a clean reading experience, with robust export options.
 
-![Reader App Dashboard](https://github.com/user-attachments/assets/placeholder-image)
+![Reader App Dashboard](public/screenshot.png)
 
 ## Features
 
