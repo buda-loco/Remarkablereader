@@ -20,7 +20,7 @@ export async function parseArticle(url: string) {
         }
 
         // Sanitize content
-        const cleanContent = createDOMPurify.sanitize(article.content);
+        const cleanContent = createDOMPurify.sanitize(article.content || '');
 
         return {
             title: article.title,

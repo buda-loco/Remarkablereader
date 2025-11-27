@@ -53,8 +53,9 @@ export async function GET(
         const dom = new JSDOM(`<!DOCTYPE html><body>
             <h1>${article.title}</h1>
             <div class="meta">
-                <p>${article.byline || ''}</p>
-                <p>${article.siteName || ''}</p>
+                ${article.byline ? `By ${article.byline} • ` : ''}
+                ${article.siteName ? `${article.siteName} • ` : ''}
+                ${new Date(article.createdAt * 1000).toLocaleDateString()}
             </div>
             ${contentWithoutImages}
         </body>`);
@@ -68,9 +69,29 @@ export async function GET(
 <head>
     <title>${article.title}</title>
     <style>
-        body { font-family: serif; line-height: 1.6; }
-        h1 { text-align: center; }
-        .meta { color: #666; font-size: 0.8em; text-align: center; margin-bottom: 2em; }
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap');
+        body { 
+            font-family: 'Merriweather', serif; 
+            line-height: 1.6;
+            color: #333;
+            text-align: left;
+        }
+        h1 { 
+            font-size: 32px; 
+            margin-bottom: 10px;
+            text-align: left;
+        }
+        .meta { 
+            color: #666; 
+            font-size: 14px; 
+            margin-bottom: 40px;
+            text-align: left;
+        }
+        img { max-width: 100%; height: auto; }
+        p { 
+            margin-bottom: 1.5em;
+            text-align: left;
+        }
     </style>
 </head>
 ${bodyContent}
