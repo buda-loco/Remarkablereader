@@ -136,6 +136,8 @@ export async function GET(
             }
         }
 
+        const escapeXML = (str: string) => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
         const serializer = new dom.window.XMLSerializer();
         // Serialize body content but remove the xmlns attribute that JSDOM/XMLSerializer might add to the root element
         // of the fragment if it thinks it's a standalone XML document.
@@ -146,7 +148,7 @@ export async function GET(
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>${article.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</title>
+    <title>${escapeXML(article.title)}</title>
     <style>
         /* Base Reset & Typography */
         body { 
@@ -261,10 +263,10 @@ ${bodyContent}
         const contentOpf = `<?xml version="1.0" encoding="UTF-8"?>
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookId" version="2.0">
     <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
-        <dc:title>${article.title}</dc:title>
-        <dc:creator opf:role="aut">${article.byline || article.siteName || 'Unknown'}</dc:creator>
+        <dc:title>${escapeXML(article.title)}</dc:title>
+        <dc:creator opf:role="aut">${escapeXML(article.byline || article.siteName || 'Unknown')}</dc:creator>
         <dc:language>en</dc:language>
-        <dc:identifier id="BookId">urn:uuid:${article.id}</dc:identifier>
+        <dc:identifier id="BookId">urn:uuid:${escapeXML(article.id)}</dc:identifier>
     </metadata>
     <manifest>
         <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>
@@ -281,18 +283,18 @@ ${bodyContent}
         const tocNcx = `<?xml version="1.0" encoding="UTF-8"?>
 <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
     <head>
-        <meta name="dtb:uid" content="urn:uuid:${article.id}"/>
+        <meta name="dtb:uid" content="urn:uuid:${escapeXML(article.id)}"/>
         <meta name="dtb:depth" content="1"/>
         <meta name="dtb:totalPageCount" content="0"/>
         <meta name="dtb:maxPageNumber" content="0"/>
     </head>
     <docTitle>
-        <text>${article.title}</text>
+        <text>${escapeXML(article.title)}</text>
     </docTitle>
     <navMap>
         <navPoint id="navPoint-1" playOrder="1">
             <navLabel>
-                <text>${article.title}</text>
+                <text>${escapeXML(article.title)}</text>
             </navLabel>
             <content src="article.xhtml"/>
         </navPoint>
