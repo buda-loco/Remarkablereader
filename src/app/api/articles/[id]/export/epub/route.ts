@@ -48,7 +48,7 @@ export async function GET(
         // Process Content and Images
         // We construct the full body content here to ensure everything is properly serialized as XHTML
         const dom = new JSDOM(`<!DOCTYPE html><body>
-            <h1>${article.title}</h1>
+            <h1 class="article-title">${article.title}</h1>
             <div class="meta">
                 ${article.byline ? `By ${article.byline} • ` : ''}
                 ${article.siteName ? `${article.siteName} • ` : ''}
@@ -57,6 +57,26 @@ export async function GET(
             ${article.content}
         </body>`);
         const document = dom.window.document;
+
+        // Clean up figures and captions
+        const figures = Array.from(document.querySelectorAll('figure'));
+        figures.forEach(figure => {
+            figure.removeAttribute('style'); // Remove inline styles that might interfere
+            figure.classList.add('article-figure');
+
+            const caption = figure.querySelector('figcaption');
+            if (caption) {
+                caption.removeAttribute('style');
+                caption.classList.add('article-caption');
+            }
+
+            const img = figure.querySelector('img');
+            if (img) {
+                img.removeAttribute('style');
+                img.classList.add('article-image');
+            }
+        });
+
         const images = Array.from(document.querySelectorAll('img'));
         const downloadedImages: { id: string, href: string, mediaType: string }[] = [];
 
@@ -107,42 +127,62 @@ export async function GET(
             color: #111;
             text-align: left;
             margin: 0;
-            padding: 5% 8%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+            padding: 0 5%; /* Reduced padding for better fit */
+            max-width: 100%;
         }
-        h1 { 
+        h1.article-title { 
             font-family: Georgia, Cambria, "Times New Roman", Times, serif;
-            font-size: 2.2em; 
+            font-size: 2em; 
             line-height: 1.2;
             margin-bottom: 0.5em;
             text-align: left !important;
             font-weight: bold;
+            display: block;
+            width: 100%;
         }
         .meta { 
             font-family: Georgia, Cambria, "Times New Roman", Times, serif;
             color: #555; 
             font-size: 0.9em; 
-            margin-bottom: 3em;
+            margin-bottom: 2em;
             text-align: left;
             border-bottom: 1px solid #eee;
             padding-bottom: 1em;
         }
-        img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
-        figure { margin: 1.5em 0; }
-        figcaption { 
+        
+        /* Fail-proof Figure Styling */
+        figure.article-figure { 
+            display: block;
+            margin: 2em 0; 
+            padding: 0;
+            width: 100%;
+            page-break-inside: avoid;
+        }
+        
+        img.article-image { 
+            display: block;
+            max-width: 100%; 
+            height: auto; 
+            margin: 0 auto 1em auto; /* Explicit bottom margin for spacing */
+        }
+        
+        figcaption.article-caption { 
+            display: block;
             font-size: 0.75em; 
             line-height: 1.3;
             color: #666; 
             text-align: center; 
-            margin-top: 0.5em; 
             font-style: italic;
+            margin-top: 0; /* Reset top margin, rely on image bottom margin */
+            padding: 0 1em;
         }
+
         p { 
             margin-bottom: 1.5em;
             text-align: left;
             text-indent: 0;
+            widows: 2;
+            orphans: 2;
         }
         a { color: #000; text-decoration: underline; }
     </style>
