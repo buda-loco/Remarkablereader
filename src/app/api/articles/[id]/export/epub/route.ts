@@ -69,29 +69,41 @@ export async function GET(
 <head>
     <title>${article.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&amp;display=swap');
         body { 
-            font-family: 'Merriweather', serif; 
-            line-height: 1.6;
-            color: #333;
+            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+            line-height: 1.8;
+            color: #111;
             text-align: left;
+            margin: 0;
+            padding: 5% 8%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
         }
         h1 { 
-            font-size: 32px; 
-            margin-bottom: 10px;
+            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+            font-size: 2.2em; 
+            line-height: 1.3;
+            margin-bottom: 0.5em;
             text-align: left;
+            font-weight: bold;
         }
         .meta { 
-            color: #666; 
-            font-size: 14px; 
-            margin-bottom: 40px;
+            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+            color: #555; 
+            font-size: 0.9em; 
+            margin-bottom: 3em;
             text-align: left;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1em;
         }
-        img { max-width: 100%; height: auto; }
+        img { max-width: 100%; height: auto; display: block; margin: 1em auto; }
         p { 
             margin-bottom: 1.5em;
             text-align: left;
+            text-indent: 0;
         }
+        a { color: #000; text-decoration: underline; }
     </style>
 </head>
 ${bodyContent}
