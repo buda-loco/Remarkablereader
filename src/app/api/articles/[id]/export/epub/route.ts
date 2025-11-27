@@ -54,14 +54,16 @@ export async function GET(
                 ${article.siteName ? `${article.siteName} • ` : ''}
                 ${new Date(article.createdAt * 1000).toLocaleDateString()}
             </div>
-            ${article.content}
+            <div class="article-content">
+                ${article.content}
+            </div>
         </body>`);
         const document = dom.window.document;
 
         // Clean up figures and captions
         const figures = Array.from(document.querySelectorAll('figure'));
         figures.forEach(figure => {
-            figure.removeAttribute('style'); // Remove inline styles that might interfere
+            figure.removeAttribute('style');
             figure.classList.add('article-figure');
 
             const caption = figure.querySelector('figcaption');
@@ -106,8 +108,6 @@ export async function GET(
                     });
                 } catch (err) {
                     console.error(`Failed to download image: ${src}`, err);
-                    // Keep original src or remove? Keeping original might be safer for fallback, 
-                    // but for reMarkable it won't work. Let's keep it but maybe add a class.
                 }
             }
         }
@@ -121,39 +121,63 @@ export async function GET(
 <head>
     <title>${article.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</title>
     <style>
+        /* Base Reset & Typography */
         body { 
-            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
-            line-height: 1.8;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1em; /* Assumed base 16px */
+            line-height: 1.4; /* 22.4px - Base rhythm */
             color: #111;
             text-align: left;
             margin: 0;
-            padding: 0 5%; /* Reduced padding for better fit */
+            padding: 0 10%; /* Generous margins */
             max-width: 100%;
+            background-color: #fff;
         }
+
+        /* Headings */
         h1.article-title { 
-            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
-            font-size: 2em; 
-            line-height: 1.2;
-            margin-bottom: 0.5em;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 2em; /* 32px - Multiple of 8 */
+            line-height: 1.25; /* 40px - Multiple of 8 */
+            margin: 1.5em 0 0.5em 0; /* Vertical rhythm */
             text-align: left !important;
             font-weight: bold;
-            display: block;
-            width: 100%;
+            page-break-after: avoid;
         }
+
+        /* Metadata */
         .meta { 
-            font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+            font-family: Georgia, "Times New Roman", serif;
             color: #555; 
-            font-size: 0.9em; 
-            margin-bottom: 2em;
+            font-size: 0.875em; /* 14px */
+            line-height: 1.6;
+            margin-bottom: 2em; /* 32px */
             text-align: left;
             border-bottom: 1px solid #eee;
             padding-bottom: 1em;
         }
         
-        /* Fail-proof Figure Styling */
+        /* Content Text */
+        p { 
+            margin-bottom: 1.5em; /* 24px - Matches base line-height roughly */
+            text-align: left;
+            text-indent: 0;
+            widows: 2;
+            orphans: 2;
+        }
+
+        /* Links */
+        a { 
+            color: #000; 
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 2px;
+        }
+
+        /* Figures & Images */
         figure.article-figure { 
             display: block;
-            margin: 2em 0; 
+            margin: 2.5em 0; /* 40px */
             padding: 0;
             width: 100%;
             page-break-inside: avoid;
@@ -163,28 +187,39 @@ export async function GET(
             display: block;
             max-width: 100%; 
             height: auto; 
-            margin: 0 auto 1em auto; /* Explicit bottom margin for spacing */
+            margin: 0 auto 1em auto; /* 16px bottom margin */
         }
         
+        /* Captions - Small Serif */
         figcaption.article-caption { 
             display: block;
-            font-size: 0.75em; 
-            line-height: 1.3;
-            color: #666; 
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 0.75em; /* 12px */
+            line-height: 1.33; /* 16px */
+            color: #444; 
             text-align: center; 
             font-style: italic;
-            margin-top: 0; /* Reset top margin, rely on image bottom margin */
-            padding: 0 1em;
+            margin-top: 0;
+            padding: 0 2em;
         }
-
-        p { 
-            margin-bottom: 1.5em;
-            text-align: left;
-            text-indent: 0;
-            widows: 2;
-            orphans: 2;
+        
+        /* Lists */
+        ul, ol {
+            margin: 0 0 1.5em 2em;
+            padding: 0;
         }
-        a { color: #000; text-decoration: underline; }
+        li {
+            margin-bottom: 0.5em;
+        }
+        
+        /* Blockquotes */
+        blockquote {
+            margin: 1.5em 2em;
+            padding-left: 1em;
+            border-left: 4px solid #ddd;
+            font-style: italic;
+            color: #444;
+        }
     </style>
 </head>
 ${bodyContent}
