@@ -67,9 +67,9 @@ export async function GET(
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-    <title>${article.title}</title>
+    <title>${article.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&amp;display=swap');
         body { 
             font-family: 'Merriweather', serif; 
             line-height: 1.6;
