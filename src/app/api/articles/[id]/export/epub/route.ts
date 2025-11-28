@@ -150,7 +150,7 @@ export async function GET(
 <head>
     <title>${escapeXML(article.title)}</title>
     <style>
-        /* Base Reset & Typography */
+        /* Base Reset and Typography */
         body { 
             font-family: Georgia, "Times New Roman", serif;
             font-size: 1em; /* Assumed base 16px */
