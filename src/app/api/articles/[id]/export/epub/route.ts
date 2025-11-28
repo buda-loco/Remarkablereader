@@ -90,25 +90,34 @@ export async function GET(
         });
 
         // Clean up figures and captions
+        // Flatten <figure> and <figcaption> into standard divs to avoid e-reader rendering quirks
         const figures = Array.from(document.querySelectorAll('figure'));
         figures.forEach(figure => {
-            figure.removeAttribute('style');
-            figure.classList.add('article-figure');
-
-            const caption = figure.querySelector('figcaption');
-            if (caption) {
-                caption.removeAttribute('style');
-                caption.classList.add('article-caption');
-            }
+            const wrapper = document.createElement('div');
+            wrapper.className = 'article-image-wrapper';
 
             const img = figure.querySelector('img');
             if (img) {
                 img.removeAttribute('style');
-                img.removeAttribute('srcset'); // Remove srcset as it can confuse older readers
+                img.removeAttribute('srcset');
                 img.removeAttribute('loading');
                 img.removeAttribute('decoding');
+                img.removeAttribute('width');
+                img.removeAttribute('height');
                 img.classList.add('article-image');
+                wrapper.appendChild(img);
             }
+
+            const caption = figure.querySelector('figcaption');
+            if (caption) {
+                const captionDiv = document.createElement('div');
+                captionDiv.className = 'article-caption';
+                captionDiv.innerHTML = caption.innerHTML; // Preserve internal formatting
+                wrapper.appendChild(captionDiv);
+            }
+
+            // Replace figure with wrapper
+            figure.parentNode?.replaceChild(wrapper, figure);
         });
 
         const images = Array.from(document.querySelectorAll('img'));
@@ -124,7 +133,7 @@ export async function GET(
             img.removeAttribute('loading');
             img.removeAttribute('decoding');
             img.removeAttribute('style');
-            img.removeAttribute('width'); // Let CSS handle sizing
+            img.removeAttribute('width');
             img.removeAttribute('height');
 
             if (src && src.startsWith('http')) {
@@ -149,11 +158,9 @@ export async function GET(
                     });
                 } catch (err) {
                     console.error(`Failed to download image: ${src}`, err);
-                    // If download fails, remove the image to prevent broken icon
                     img.remove();
                 }
             } else {
-                // Remove images with invalid/local sources
                 img.remove();
             }
         }
@@ -180,7 +187,7 @@ export async function GET(
             color: #111;
             text-align: left;
             margin: 0;
-            padding: 0 10%; /* Generous margins */
+            padding: 0 12%; /* Increased margins as requested */
             max-width: 100%;
             background-color: #fff;
         }
@@ -226,23 +233,24 @@ export async function GET(
         }
 
         /* Figures and Images */
-        figure.article-figure { 
+        .article-image-wrapper { 
             display: block;
             margin: 2.5em 0; /* 40px */
             padding: 0;
             width: 100%;
             page-break-inside: avoid;
+            text-align: center;
         }
         
         img.article-image { 
             display: block;
             max-width: 100%; 
             height: auto; 
-            margin: 0 auto 1em auto; /* 16px bottom margin */
+            margin: 0 auto 0.5em auto; /* Small bottom margin to separate from caption */
         }
         
         /* Captions - Small Serif */
-        figcaption.article-caption { 
+        .article-caption { 
             display: block;
             font-family: Georgia, "Times New Roman", serif;
             font-size: 0.75em; /* 12px */
@@ -251,7 +259,7 @@ export async function GET(
             text-align: center; 
             font-style: italic;
             margin-top: 0;
-            padding: 0 2em;
+            padding: 0 1em;
         }
         
         /* Lists */
