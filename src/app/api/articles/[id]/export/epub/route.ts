@@ -225,7 +225,7 @@ export async function GET(
             text-underline-offset: 2px;
         }
 
-        /* Figures & Images */
+        /* Figures and Images */
         figure.article-figure { 
             display: block;
             margin: 2.5em 0; /* 40px */
