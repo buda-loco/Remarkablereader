@@ -47,23 +47,27 @@ export async function GET(
 
         // Process Content and Images
         // We construct the full body content here to ensure everything is properly serialized as XHTML
-        // IMPORTANT: Replace named entities with numeric entities or raw characters to prevent XML parsing errors
-        // on devices that don't fully support the XHTML DTD (like reMarkable).
-        // We do this BEFORE JSDOM parsing to ensure they are treated as the correct characters.
-        const cleanContent = (article.content || '')
-            .replace(/&nbsp;/g, '&#160;')
-            .replace(/&mdash;/g, '&#8212;')
-            .replace(/&ndash;/g, '&#8211;')
-            .replace(/&ldquo;/g, '&#8220;')
-            .replace(/&rdquo;/g, '&#8221;')
-            .replace(/&lsquo;/g, '&#8216;')
-            .replace(/&rsquo;/g, '&#8217;')
-            .replace(/&copy;/g, '&#169;')
-            .replace(/&trade;/g, '&#8482;')
-            .replace(/&reg;/g, '&#174;')
-            .replace(/&hellip;/g, '&#8230;')
-            .replace(/&bull;/g, '&#8226;')
-            .replace(/&middot;/g, '&#183;');
+        // IMPORTANT: Replace named entities with ASCII equivalents to prevent XML parsing errors.
+        // The reMarkable parser seems extremely strict or buggy with entities.
+        // We also strip comments to avoid any issues there.
+        let cleanContent = (article.content || '')
+            .replace(/<!--[\s\S]*?-->/g, '') // Strip comments
+            .replace(/&nbsp;/g, ' ') // Replace nbsp with space
+            .replace(/&mdash;/g, '-')
+            .replace(/&ndash;/g, '-')
+            .replace(/&ldquo;/g, '"')
+            .replace(/&rdquo;/g, '"')
+            .replace(/&lsquo;/g, "'")
+            .replace(/&rsquo;/g, "'")
+            .replace(/&copy;/g, '(c)')
+            .replace(/&trade;/g, '(tm)')
+            .replace(/&reg;/g, '(r)')
+            .replace(/&hellip;/g, '...')
+            .replace(/&bull;/g, '*')
+            .replace(/&middot;/g, '.')
+            // Catch-all for other named entities: try to replace them with nothing or a placeholder if we could,
+            // but for now let's trust JSDOM to handle the rest as text.
+            ;
 
         const dom = new JSDOM(`<!DOCTYPE html><body>
             <h1 class="article-title">${article.title}</h1>
