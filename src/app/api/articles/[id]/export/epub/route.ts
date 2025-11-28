@@ -110,10 +110,10 @@ export async function GET(
 
             const caption = figure.querySelector('figcaption');
             if (caption) {
-                const captionDiv = document.createElement('div');
-                captionDiv.className = 'article-caption';
-                captionDiv.innerHTML = caption.innerHTML; // Preserve internal formatting
-                wrapper.appendChild(captionDiv);
+                const captionSmall = document.createElement('small');
+                captionSmall.className = 'article-caption';
+                captionSmall.innerHTML = caption.innerHTML; // Preserve internal formatting
+                wrapper.appendChild(captionSmall);
             }
 
             // Replace figure with wrapper
@@ -250,7 +250,7 @@ export async function GET(
         }
         
         /* Captions - Small Serif */
-        .article-caption { 
+        small.article-caption { 
             display: block;
             font-family: Georgia, "Times New Roman", serif;
             font-size: 0.75em; /* 12px */
