@@ -17,7 +17,7 @@
     "epub-gen": "^0.1.0",
     "isomorphic-dompurify": "^2.33.0",
     "jsdom": "^27.2.0",
-    "next": "16.0.5",
+    "next": "16.0.10",
     "puppeteer": "^24.31.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
